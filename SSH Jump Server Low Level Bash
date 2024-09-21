@@ -1,0 +1,8 @@
+#!/bin/bash
+if [ -z "$1" ] > /dev/null 2>&1;
+then
+        echo "You cannot enter a Null SSH host"
+else
+        sshpass -p PASSWORD ssh -o StrictHostKeyChecking=no USERNAME@$1
+fi
+
