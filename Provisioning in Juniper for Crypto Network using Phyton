@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+def get_user_input():
+    interface = input("Enter Interface (e.g., ae1, ae0, ae2): ")
+    vlan_id = input("Enter VLAN ID: ")
+    vlan_description = input("Enter VLAN Description: ")
+    ip_address = input("Enter IP Address (e.g., 192.168.1.1/30): ")
+    routing_instance = input("Enter Routing Instance: ")
+    bgp_group = input("Enter BGP Group (e.g., ALI, AZURE, AWS): ")
+    bgp_neighbor = input("Enter BGP Neighbor IP: ")
+    authentication_key = input("Enter BGP Authentication Key: ")
+    peer_as = input("Enter BGP Peer AS: ")
+    route_distinguisher = input("Enter Route Distinguisher (e.g, 10.10.10.1:20057, 10.10.10.2:20057): ")
+    vrf_target = input("Enter VRF Target (e.g., target:(ASN-NUMBER):20057): ")
+    policer_input = input("Enter Input Policer (e.g., POLICER-10M, POLICER-50M): ")
+    policer_output = input("Enter Output Policer (e.g., POLICER-10M, POLICER-50M): ")
+
+    return {
+        'interface': interface,
+        'vlan_id': vlan_id,
+        'vlan_description': vlan_description,
+        'ip_address': ip_address,
+        'routing_instance': routing_instance,
+        'bgp_group': bgp_group,
+        'bgp_neighbor': bgp_neighbor,
+        'authentication_key': authentication_key,
+        'peer_as': peer_as,
+        'route_distinguisher': route_distinguisher,
+        'vrf_target': vrf_target,
+        'policer_input': policer_input,
+        'policer_output': policer_output
+    }
+
+def write_commands_to_file(user_input, file_path):
+    commands = [
+        f'set logical-systems CRYPTO interfaces {user_input["interface"]} unit {user_input["vlan_id"]} description {user_input["vlan_description"]}',
+        f'set logical-systems CRYPTO interfaces {user_input["interface"]} unit {user_input["vlan_id"]} vlan-id {user_input["vlan_id"]}',
+        f'set logical-systems CRYPTO interfaces {user_input["interface"]} unit {user_input["vlan_id"]} family inet policer input {user_input["policer_input"]}',
+        f'set logical-systems CRYPTO interfaces {user_input["interface"]} unit {user_input["vlan_id"]} family inet policer output {user_input["policer_output"]}',
+        f'set logical-systems CRYPTO interfaces {user_input["interface"]} unit {user_input["vlan_id"]} family inet address {user_input["ip_address"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} instance-type vrf',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} type external',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} neighbor {user_input["bgp_neighbor"]} authentication-key {user_input["authentication_key"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} neighbor {user_input["bgp_neighbor"]} peer-as {user_input["peer_as"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} neighbor {user_input["bgp_neighbor"]} bfd-liveness-detection minimum-interval 300',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} neighbor {user_input["bgp_neighbor"]} bfd-liveness-detection multiplier 3',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} protocols bgp group {user_input["bgp_group"]} neighbor {user_input["bgp_neighbor"]} as-override',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} interface {user_input["interface"]}.{user_input["vlan_id"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} route-distinguisher {user_input["route_distinguisher"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} vrf-target {user_input["vrf_target"]}',
+        f'set logical-systems CRYPTO routing-instances {user_input["routing_instance"]} vrf-table-label',
+    ]
+
+    with open(file_path, 'w') as file:
+        for command in commands:
+            file.write(f"{command}\n")
+
+# Get user inputs
+user_input = get_user_input()
+
+# Define the file path where the commands will be written
+file_path = 'juniper_config.txt'
+
+# Write the commands to the file
+write_commands_to_file(user_input, file_path)
+
+print(f"Commands written successfully to {file_path}.")
+
